@@ -1,8 +1,10 @@
 package com.nikasov.pagingexample.di
 
 import android.content.Context
-import com.nikasov.pagingexample.data.network.Api
-import com.readystatesoftware.chuck.ChuckInterceptor
+import com.chuckerteam.chucker.api.ChuckerCollector
+import com.chuckerteam.chucker.api.ChuckerInterceptor
+import com.nikasov.pagingexample.BuildConfig
+import com.nikasov.pagingexample.data.network.passenger.PassengerApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,8 +39,15 @@ object NetworkModule {
         }
 
         val okHttpClient = OkHttpClient.Builder()
-            .addNetworkInterceptor(ChuckInterceptor(context))
             .addInterceptor(requestInterceptor)
+            .addNetworkInterceptor(
+                ChuckerInterceptor.Builder(context)
+                    .collector(ChuckerCollector(context))
+                    .maxContentLength(250000L)
+                    .redactHeaders(emptySet())
+                    .alwaysReadResponseBody(false)
+                    .build()
+            )
             .build()
 
         return Retrofit.Builder()
@@ -50,8 +59,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApi(retrofit: Retrofit) : Api {
-        return retrofit.create(Api::class.java)
+    fun providePagingApi(retrofit: Retrofit) : PassengerApi {
+        return retrofit.create(PassengerApi::class.java)
     }
 
 }
